@@ -1,0 +1,23 @@
+{
+  "name": "proxy-handlers",
+  "version": "0.0.1",
+  "description": "Predefined ES6 Proxy handlers",
+  "main": "proxy-handlers.js",
+  "license" : "BSD",
+  "keywords": [
+    "reflection",
+    "proxies",
+    "proxy",
+    "reflect",
+    "proxy handler",
+    "harmony"
+  ],
+  "homepage": "https://github.com/tvcutsem/proxy-handlers",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://tvcutsem@github.com/tvcutsem/proxy-handlers.git"
+  },
+  "dependencies" : {
+    "harmony-reflect" : ">= 0.0.10"
+  }
+}
