@@ -37,19 +37,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *   https://github.com/tvcutsem/harmony-reflect
  *
  * Exports:
- *  - Proxy.DelegatingHandler
- *  - Proxy.ForwardingHandler
- *  - Proxy.VirtualHandler
+ *  - DelegatingHandler
+ *  - ForwardingHandler
+ *  - VirtualHandler
  */
-(function(global) { // function-as-module pattern
+(function(exports) { // function-as-module pattern
   "use strict";
 
-  if (typeof Proxy === "undefined") {
-    throw new Error("require ECMAScript 6 Proxy constructor");
-  }
-  if (typeof Reflect === "undefined") {
-    throw new Error("require ECMAScript 6 Reflect module");
-  }
+if (typeof Proxy === "undefined") {
+  throw new Error("require ECMAScript 6 Proxy constructor");
+}
+if (typeof Reflect === "undefined") {
+  throw new Error("require ECMAScript 6 Reflect module");
+}
 
 // == auxiliaries ==
 
@@ -448,8 +448,8 @@ VirtualHandler.prototype.apply                    = abstract("apply");
 
 // == export bindings ==
 
-Proxy.DelegatingHandler = DelegatingHandler;
-Proxy.ForwardingHandler = ForwardingHandler;
-Proxy.VirtualHandler = VirtualHandler;  
+exports.DelegatingHandler = DelegatingHandler;
+exports.ForwardingHandler = ForwardingHandler;
+exports.VirtualHandler = VirtualHandler;
 
-}(typeof exports !== 'undefined' ? global : this)); // function-as-module pattern
+}(typeof exports !== 'undefined' ? exports : this)); // function-as-module pattern

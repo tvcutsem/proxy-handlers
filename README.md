@@ -2,22 +2,27 @@ This library provides a number of predefined ECMAScript 6 Proxy handlers.
 
 The goal is to simplify defining a complete and correct Proxy handler.
 
-Given the lack of built-in support for proxies or the Reflect module
-in current browsers, this library requires the
-[harmony-reflect](https://github.com/tvcutsem/harmony-reflect) library
-as its main dependency.
-
-After loading this library, the `Proxy` global object is augmented with:
-
-  * `Proxy.DelegatingHandler`
-  * `Proxy.ForwardingHandler`
-  * `Proxy.VirtualHandler`
-  
 This library is based on a [draft ECMAScript proposal](http://wiki.ecmascript.org/doku.php?id=harmony:virtual_object_api).
 
-All handlers exported by this library are modeled using standard
-prototype-based inheritance and can be regarded as ECMAScript 6 classes. That's
-why the docs below use the terminology "subclass this handler".
+To run:
+
+```
+node --harmony
+> var Handlers = require('proxy-handlers');
+```
+
+This library defines three constructor functions:
+
+  * `DelegatingHandler`
+  * `ForwardingHandler`
+  * `VirtualHandler`
+
+Each defines a generic type of proxy handler from which your own proxy
+handlers can inherit.
+
+All handlers exported by this library are modeled as standard JavaScript
+constructor functions, and can be "subclassed" using standard JavaScript
+prototype-based inheritance.
 
 # DelegatingHandler
 
@@ -169,16 +174,24 @@ The `VirtualHandler` exists to prevent subtle bugs such as these.
 an error, signaling to the programmer that he or she probably forgot to override
 a method:
 
-class LazyObject extends VirtualHandler {
-  // as before
-}
+```js
+function LazyObject(thunk) {
+  this.thunk = thunk;
+  this.val = undefined;
+};
+LazyObject.prototype = Object.create(VirtualHandler.prototype);
+// initialize as before
  
 var thunk = function() { return {foo:42}; };
 var dummyTarget = {};
 var p = LazyObject.proxyFor(dummyTarget, thunk);
  
 p.foo = 43; // error: "getPrototypeOf"/"defineProperty" not implemented
-To make the LazyObject abstraction work reliably, the author must override all fundamental traps and make sure they are all “rerouted” to the initialized object instead of the dummy target:
+```
+
+To make the `LazyObject` abstraction work reliably, the author must override all
+fundamental traps and make sure they are all “rerouted” to the initialized
+object instead of the dummy target:
 
 ```js
 function LazyObject(thunk) {
@@ -206,3 +219,11 @@ LazyObject.prototype.getPrototypeOf = function(target) {
 };
 ... // and so on for all other fundamental traps
 ```
+
+# Dependencies
+
+Given the lack of built-in support for proxies or the Reflect module
+in current browsers, this library requires the
+[harmony-reflect](https://github.com/tvcutsem/harmony-reflect) library
+as its main dependency (if you use the NPM package manager, this is handled
+automatically).

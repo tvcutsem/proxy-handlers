@@ -32,7 +32,7 @@ var print = function(msg) {
   else { console.log(msg); }
 }
 require('harmony-reflect');
-require('../proxy_handlers.js');
+var Handlers = require('../proxy_handlers.js');
 
 function assert(b, msg) {
   print((b ? 'success: ' : 'fail: ') + msg);
@@ -55,9 +55,9 @@ function assertThrows(message, fn) {
 function test() {
 
   // imports
-  var DelegatingHandler = Proxy.DelegatingHandler;
-  var ForwardingHandler = Proxy.ForwardingHandler;
-  var VirtualHandler = Proxy.VirtualHandler;
+  var DelegatingHandler = Handlers.DelegatingHandler;
+  var ForwardingHandler = Handlers.ForwardingHandler;
+  var VirtualHandler = Handlers.VirtualHandler;
 
   // test inconsistency among traps with 'raw' handlers
   (function(){

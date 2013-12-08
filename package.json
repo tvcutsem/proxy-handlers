@@ -1,6 +1,6 @@
 {
   "name": "proxy-handlers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Predefined ES6 Proxy handlers",
   "main": "proxy-handlers.js",
   "license" : "BSD",
