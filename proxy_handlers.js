@@ -48,7 +48,11 @@ if (typeof Proxy === "undefined") {
   throw new Error("require ECMAScript 6 Proxy constructor");
 }
 if (typeof Reflect === "undefined") {
-  throw new Error("require ECMAScript 6 Reflect module");
+  if (typeof require === "function") {
+    require("harmony-reflect");
+  } else {
+    throw new Error("require ECMAScript 6 Reflect module");    
+  }
 }
 
 // == auxiliaries ==
