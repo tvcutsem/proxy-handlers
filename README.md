@@ -1,8 +1,6 @@
 This library provides a number of predefined ECMAScript 6 Proxy handlers.
 
-The goal is to simplify defining a complete and correct Proxy handler.
-
-This library is based on a [draft ECMAScript proposal](http://wiki.ecmascript.org/doku.php?id=harmony:virtual_object_api).
+The goal is to simplify writing complete and correct Proxy handlers.
 
 To run:
 
@@ -23,6 +21,8 @@ handlers can inherit.
 All handlers exported by this library are modeled as standard JavaScript
 constructor functions, and can be "subclassed" using standard JavaScript
 prototype-based inheritance.
+
+:warning: This library is based on a [draft ECMAScript proposal](http://wiki.ecmascript.org/doku.php?id=harmony:virtual_object_api). However, note that this draft proposal is no longer on track for standardization and that the handlers defined by this library are not built-in to ECMAScript 6.
 
 # DelegatingHandler
 
