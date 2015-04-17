@@ -1,4 +1,4 @@
-This library provides a number of predefined ECMAScript 6 Proxy handlers.
+This library provides a number of subclassable ECMAScript 6 Proxy handlers.
 
 The goal is to simplify writing complete and correct Proxy handlers.
 
