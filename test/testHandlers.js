@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file tests '../handlers.js' using the examples at:
 // http://wiki.ecmascript.org/doku.php?id=harmony:virtual_object_api
 
-var print = function(msg) {
+var print = msg => {
   if(/^fail/.test(msg)) { console.error(msg); }
   else { console.log(msg); }
 }
@@ -60,10 +60,10 @@ function test() {
   var VirtualHandler = Handlers.VirtualHandler;
 
   // test inconsistency among traps with 'raw' handlers
-  (function(){
+  ((() => {
     var target = {};
     var proxy = new Proxy(target, {
-      getOwnPropertyDescriptor: function(target, name) {
+      getOwnPropertyDescriptor(target, name) {
         return { value: 42, configurable: true };
       }
     });
@@ -72,43 +72,45 @@ function test() {
     assert(desc.value === 42, 'proxy has a descriptor');
     assert(proxy.foo === undefined, 'proxy.foo === undefined');
     assert("foo" in proxy === false, '"foo" in proxy === false');
-  }());
+  })());
 
   // test that the inconsistency is gone when using DelegatingHandler
-  (function () {
+  ((() => {
     var target = {};
     var handler = Object.create(DelegatingHandler.prototype);
-    handler.getOwnPropertyDescriptor = function(target, name) {
-      return { value: 42, configurable: true };
-    };
+    handler.getOwnPropertyDescriptor = (target, name) => ({
+      value: 42,
+      configurable: true
+    });
 
     var proxy = new Proxy(target, handler);
     var desc = Object.getOwnPropertyDescriptor(proxy,"foo");
     assert(desc.value === 42, 'proxy has a descriptor');
     assert(proxy.foo === 42, 'proxy.foo === 42');
     assert("foo" in proxy === true, '"foo" in proxy === true');    
-  }());
+  })());
 
 
   // test proxyFor
-  (function () {
+  ((() => {
     function MyHandler() {};
     // non-standard, but needed so that MyHandler inherits proxyFor method
     // from DelegatingHandler function
     MyHandler.__proto__ = DelegatingHandler;
     MyHandler.prototype = Object.create(DelegatingHandler.prototype);
-    MyHandler.prototype.getOwnPropertyDescriptor = function(target, name) {
-      return { value: 42, configurable: true };
-    };
+    MyHandler.prototype.getOwnPropertyDescriptor = (target, name) => ({
+      value: 42,
+      configurable: true
+    });
 
     var target = {};
     var proxy = MyHandler.proxyFor(target);
     assert(proxy.foo === 42, 'proxy.foo === 42 (proxyFor)');
-  }());
+  })());
 
 
   // test DelegatingHandler using simple Logger example
-  (function () {
+  ((() => {
     var lastLogged = "";
     
     function Logger() {};
@@ -121,7 +123,7 @@ function test() {
 
     var p = DelegatingHandler.proxyFor.call(Logger,{
       foo: 42,
-      bar: function(v) { this.foo = v; }
+      bar(v) { this.foo = v; }
     });
 
     // triggers "defineProperty" trap, logs the update:
@@ -142,12 +144,12 @@ function test() {
     
     assert(lastLogged === "foo", "DelegatingHandler bar logged");
     lastLogged = "";
-  }());
+  })());
   
 
 
   // test ForwardingHandler using simple Logger example
-  (function () {    
+  ((() => {    
     var lastLogged = "";
     
     function Logger() {};
@@ -183,21 +185,21 @@ function test() {
     p.bar = 45;
     
     assert(lastLogged === "", "ForwardingHandler bar not logged");
-  }());
+  })());
 
 
   // assert ForwardingHandler is necessary to wrap objects with private state,
   // such as Date
-  (function() {
+  ((() => {
     "use strict";    
     var target = new Date();
     var proxy = new Proxy(target, {}); // or new Proxy(target,new DelegatingHandler())
     
     assertThrows(/(^.*called on incompatible.*$)|(^.*not a Date.*$)/,
-                 function() { proxy.getFullYear(); }); // error: not a Date
-  }());
+                 () => { proxy.getFullYear(); }); // error: not a Date
+  })());
   
-  (function() {
+  ((() => {
     "use strict";    
     var target = new Date();
     var proxy = new Proxy(target, new ForwardingHandler());
@@ -207,19 +209,19 @@ function test() {
     // turning it into an accessor works:
     Object.defineProperty(target,"fullYear",{
       // inside getter, this will refer to a proper Date
-      get: function() { return Date.prototype.getFullYear.call(this); }
+      get() { return Date.prototype.getFullYear.call(this); }
     });
     assert(proxy.fullYear === target.getFullYear(),
           "proxy.getFullYear() works with ForwardingHandler");
 
     var getFullYear = proxy.getFullYear;
     assertThrows(/(^.*can't convert.*$)|(^.*called on incompatible.*$)|(^.*not a Date.*$)/,
-                 function() { getFullYear(); }); // error: not a Date
-  }());
+                 () => { getFullYear(); }); // error: not a Date
+  })());
 
 
   // LazyObject with DelegatingHandler
-  (function() {  
+  ((() => {  
     function LazyObject(thunk) {
       this.thunk = thunk;
       this.val = undefined;
@@ -240,7 +242,9 @@ function test() {
 
     // thunk will be called to initialize the object the first
     // time it is accessed:
-    var thunk = function() { return {foo:42}; };
+    var thunk = () => ({
+      foo:42
+    });
 
     // create a LazyObject proxy with the thunk, and an empty target object
     // (the target object is irrelevant for this abstraction):
@@ -252,11 +256,11 @@ function test() {
     p.foo = 43;
     assert(p.foo === 42, "p.foo still 42 after update for LazyObject");
     assert(dummyTarget.foo === 43, "dummyTarget.foo === 43");
-  }());
+  })());
 
 
   // incomplete LazyObject with VirtualHandler
-  (function() {    
+  ((() => {    
     function LazyObject(thunk) {
       this.thunk = thunk;
       this.val = undefined;
@@ -277,7 +281,9 @@ function test() {
 
     // thunk will be called to initialize the object the first
     // time it is accessed:
-    var thunk = function() { return {foo:42}; };
+    var thunk = () => ({
+      foo:42
+    });
 
     // create a LazyObject proxy with the thunk, and an empty target object
     // (the target object is irrelevant for this abstraction):
@@ -287,11 +293,11 @@ function test() {
     assert(p.foo === 42, "p.foo === 42 for LazyObject");
 
     assertThrows("getPrototypeOf not implemented",
-                 function() { p.foo = 43; });
-  }());
+                 () => { p.foo = 43; });
+  })());
 
   // complete LazyObject with VirtualHandler
-  (function() {  
+  ((() => {  
     function LazyObject(thunk) {
       this.thunk = thunk;
       this.val = undefined;
@@ -318,7 +324,9 @@ function test() {
 
     // thunk will be called to initialize the object the first
     // time it is accessed:
-    var thunk = function() { return {foo:42}; };
+    var thunk = () => ({
+      foo:42
+    });
 
     // create a LazyObject proxy with the thunk, and an empty target object
     // (the target object is irrelevant for this abstraction):
@@ -328,7 +336,7 @@ function test() {
     assert(p.foo === 42, "p.foo === 42 for LazyObject");
     p.foo = 43;
     assert(p.foo === 43, "p.foo === 43 after update for LazyObject");
-  }());
+  })());
 
 } // end test()
 
