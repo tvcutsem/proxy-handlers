@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  - ForwardingHandler
  *  - VirtualHandler
  */
-(function(exports) { // function-as-module pattern
+((exports => { // function-as-module pattern
   "use strict";
 
 if (typeof Proxy === "undefined") {
@@ -188,7 +188,7 @@ DelegatingHandler.prototype = {
   apply:                    forward("apply"),
  
   // derived traps
-  has: function(target, name) {
+  has(target, name) {
     var desc = this.getOwnPropertyDescriptor(target, name);
     desc = normalizeAndCompletePropertyDescriptor(desc);
     if (desc !== undefined) {
@@ -200,12 +200,12 @@ DelegatingHandler.prototype = {
     }
     return Reflect.has(proto, name);
   },
-  hasOwn: function(target,name) {
+  hasOwn(target, name) {
     var desc = this.getOwnPropertyDescriptor(target,name);
     desc = normalizeAndCompletePropertyDescriptor(desc);
     return desc !== undefined;
   },
-  get: function(target, name, receiver) {
+  get(target, name, receiver) {
     var desc = this.getOwnPropertyDescriptor(target, name);
     desc = normalizeAndCompletePropertyDescriptor(desc);
     if (desc === undefined) {
@@ -224,7 +224,7 @@ DelegatingHandler.prototype = {
     }
     return desc.get.call(receiver);
   },
-  set: function(target, name, value, receiver) {
+  set(target, name, value, receiver) {
     var ownDesc = this.getOwnPropertyDescriptor(target, name);
     ownDesc = normalizeAndCompletePropertyDescriptor(ownDesc);
     if (isDataDescriptor(ownDesc)) {
@@ -245,12 +245,12 @@ DelegatingHandler.prototype = {
       }
       if (isDataDescriptor(receiverDesc)) {
         if (!receiverDesc.writable) return false;
-        Object.defineProperty(receiver, name, {value: value});
+        Object.defineProperty(receiver, name, {value});
         return true;
       }
       if (!Object.isExtensible(receiver)) return false;
       Object.defineProperty(receiver, name,
-        { value: value,
+        { value,
           writable: true,
           enumerable: true,
           configurable: true });
@@ -259,7 +259,7 @@ DelegatingHandler.prototype = {
       return Reflect.set(proto, name, value, receiver);
     }
   },
-  enumerate: function (target) {
+  enumerate(target) {
     var result = [];
     
     var trapResult = this.getOwnPropertyNames(target);
@@ -282,7 +282,7 @@ DelegatingHandler.prototype = {
     result.concat(parentResult);
     return result;
   },
-  keys: function(target) {
+  keys(target) {
     var trapResult = this.getOwnPropertyNames(target);
     var l = +trapResult.length;
     var result = [];
@@ -296,7 +296,7 @@ DelegatingHandler.prototype = {
     }
     return result;
   },
-  construct: function(target, args) {
+  construct(target, args) {
     var proto = this.get(target, 'prototype', target);
     var instance;
     if (Object(proto) === proto) {
@@ -313,7 +313,7 @@ DelegatingHandler.prototype = {
  
   // deprecated traps:
  
-  seal: function(target) {
+  seal(target) {
     var success = this.preventExtensions(target);
     success = !!success; // coerce to Boolean
     if (success) {
@@ -326,7 +326,7 @@ DelegatingHandler.prototype = {
     }
     return success;
   },
-  freeze: function(target) {
+  freeze(target) {
     var success = this.preventExtensions(target);
     success = !!success; // coerce to Boolean
     if (success) {
@@ -347,7 +347,7 @@ DelegatingHandler.prototype = {
     }
     return success;
   },
-  isSealed: function(target) {
+  isSealed(target) {
     if (this.isExtensible(target)) {
       return false;
     }
@@ -356,7 +356,7 @@ DelegatingHandler.prototype = {
       return !this.getOwnPropertyDescriptor(target,name).configurable;
     }, this);
   },
-  isFrozen: function(target) {
+  isFrozen(target) {
     if (this.isExtensible(target)) {
       return false;
     }
@@ -414,12 +414,12 @@ ForwardingHandler.prototype.set = function(target, name, value, receiver) {
     }
     if (isDataDescriptor(receiverDesc)) {
       if (!receiverDesc.writable) return false;
-      Object.defineProperty(receiver, name, {value: value});
+      Object.defineProperty(receiver, name, {value});
       return true;
     }
     if (!Object.isExtensible(receiver)) return false;
     Object.defineProperty(receiver, name,
-      { value: value,
+      { value,
         writable: true,
         enumerable: true,
         configurable: true });
@@ -432,7 +432,7 @@ ForwardingHandler.prototype.set = function(target, name, value, receiver) {
 // === VirtualHandler ===
 
 function abstract(name) {
-  return function(/*...args*/) {
+  return () => /*...args*/{
     throw new TypeError(name + " not implemented");
   };
 }
@@ -456,4 +456,4 @@ exports.DelegatingHandler = DelegatingHandler;
 exports.ForwardingHandler = ForwardingHandler;
 exports.VirtualHandler = VirtualHandler;
 
-}(typeof exports !== 'undefined' ? exports : this)); // function-as-module pattern
+})(typeof exports !== 'undefined' ? exports : this)); // function-as-module pattern
